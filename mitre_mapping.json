@@ -1,0 +1,87 @@
+{
+    "brute_force": {
+        "technique_id": "T1110",
+        "technique_name": "Brute Force",
+        "tactic": "Credential Access",
+        "description": "Adversary attempts to gain access by systematically guessing credentials.",
+        "url": "https://attack.mitre.org/techniques/T1110/",
+        "sub_techniques": [
+            {
+                "id": "T1110.001",
+                "name": "Password Guessing"
+            },
+            {
+                "id": "T1110.003",
+                "name": "Password Spraying"
+            }
+        ]
+    },
+    "account_creation": {
+        "technique_id": "T1136",
+        "technique_name": "Create Account",
+        "tactic": "Persistence",
+        "description": "Adversary creates a new account to maintain access to a system.",
+        "url": "https://attack.mitre.org/techniques/T1136/",
+        "sub_techniques": [
+            {
+                "id": "T1136.001",
+                "name": "Local Account"
+            },
+            {
+                "id": "T1136.002",
+                "name": "Domain Account"
+            }
+        ]
+    },
+    "privilege_escalation_group": {
+        "technique_id": "T1098",
+        "technique_name": "Account Manipulation",
+        "tactic": "Persistence / Privilege Escalation",
+        "description": "Adversary modifies group membership to escalate privileges.",
+        "url": "https://attack.mitre.org/techniques/T1098/",
+        "sub_techniques": [
+            {
+                "id": "T1098.007",
+                "name": "Additional Local or Domain Groups"
+            }
+        ]
+    },
+    "encoded_powershell": {
+        "technique_id": "T1059.001",
+        "technique_name": "PowerShell",
+        "tactic": "Execution",
+        "description": "Adversary uses encoded PowerShell commands to evade detection.",
+        "url": "https://attack.mitre.org/techniques/T1059/001/",
+        "sub_techniques": []
+    },
+    "suspicious_process": {
+        "technique_id": "T1059",
+        "technique_name": "Command and Scripting Interpreter",
+        "tactic": "Execution",
+        "description": "Adversary spawns suspicious processes for execution or lateral movement.",
+        "url": "https://attack.mitre.org/techniques/T1059/",
+        "sub_techniques": [
+            {
+                "id": "T1059.001",
+                "name": "PowerShell"
+            },
+            {
+                "id": "T1059.003",
+                "name": "Windows Command Shell"
+            }
+        ]
+    },
+    "process_anomaly": {
+        "technique_id": "T1055",
+        "technique_name": "Process Injection",
+        "tactic": "Defense Evasion / Privilege Escalation",
+        "description": "Anomalous process creation patterns may indicate injection or hollowing.",
+        "url": "https://attack.mitre.org/techniques/T1055/",
+        "sub_techniques": [
+            {
+                "id": "T1055.012",
+                "name": "Process Hollowing"
+            }
+        ]
+    }
+}

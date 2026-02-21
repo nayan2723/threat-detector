@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Output files (regenerated on each run)
+output/alerts.json
+output/incident_report.txt
+
+# Sample data (may contain sensitive logs)
+sample_logs/*.evtx
+sample_logs/*.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+.DS_Store

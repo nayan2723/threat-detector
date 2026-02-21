@@ -144,11 +144,3 @@ Each alert in `alerts.json` includes detection context and MITRE ATT&CK enrichme
   }
 }
 ```
-
-## License
-
-MIT
-
-## Author
-
-Built for security professionals who believe in defense through detection.

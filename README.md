@@ -4,12 +4,6 @@ A production-grade command-line tool that parses Windows Security EVTX logs and 
 
 Built for SOC analysts, incident responders, and security engineers who need fast, offline triage of Windows event logs.
 
-## Architecture
-
-```
-EVTX/JSON Logs → Parser → Detection Modules → Severity Engine → MITRE Mapping → Alert Output → Incident Report
-```
-
 ## Detection Capabilities
 
 | Detection | Event ID | MITRE ATT&CK | Severity |

@@ -140,7 +140,7 @@ Or copy from: `C:\Windows\System32\winevt\Logs\Security.evtx`
 
 ## Sample Output
 
-<img width="1438" height="988" alt="image" src="https://github.com/user-attachments/assets/188ae3ae-6ce9-4d85-88c3-a8dcca4862ce" />
+<img width="1511" height="1041" alt="image" src="https://github.com/user-attachments/assets/0699d305-e3a8-42df-9fa1-b235ab81d82a" />
 
 
 Each alert in `alerts.json` includes detection context and MITRE ATT&CK enrichment:

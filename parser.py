@@ -105,7 +105,9 @@ def _parse_record(record) -> dict | None:
 
     # Parse timestamp from TimeCreated element
     time_created = system.find(f"{NS}TimeCreated")
-    timestamp_str = time_created.get("SystemTime", "") if time_created is not None else ""
+    timestamp_str = (
+        time_created.get("SystemTime", "") if time_created is not None else ""
+    )
     timestamp = _parse_timestamp(timestamp_str)
 
     computer_elem = system.find(f"{NS}Computer")

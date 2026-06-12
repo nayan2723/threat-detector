@@ -1,9 +1,15 @@
 # Windows Threat Detection Engine – Correlation-Based Log Analysis with MITRE ATT&CK Mapping
 
-A production-grade command-line tool that parses Windows Security EVTX logs and detects suspicious activities mapped to MITRE ATT&CK techniques.
+A production-grade command-line tool that parses Windows Security EVTX logs and detects suspicious activities mapped to MITRE ATT&CK techniques. 
+Now features a beautiful CLI, automated testing, Slack integrations, and an interactive web dashboard!
 
 Built for SOC analysts, incident responders, and security engineers who need fast, offline triage of Windows event logs.
 
+## Architecture
+
+```
+EVTX/JSON Logs → Parser → Detection Modules → Severity Engine → MITRE Mapping → Alert Output → Incident Report / Web Dashboard / Slack
+```
 ## Detection Capabilities
 
 | Detection | Event ID | MITRE ATT&CK | Severity |
@@ -20,12 +26,16 @@ Built for SOC analysts, incident responders, and security engineers who need fas
 ```
 win-threat-detector/
 ├── detection_engine.py      # Main CLI entry point
+├── dashboard.py             # Streamlit Interactive Web Dashboard
 ├── parser.py                # EVTX log parsing logic
 ├── detectors.py             # Threat detection rules
-├── utils.py                 # MITRE enrichment, report generation
+├── utils.py                 # MITRE enrichment, report generation, Slack Integration
 ├── mitre_mapping.json       # MITRE ATT&CK technique mappings
 ├── generate_sample_logs.py  # Test data generator
 ├── requirements.txt         # Python dependencies
+├── Makefile                 # Shortcuts for testing and linting
+├── tests/                   # Pytest test suite
+├── .github/                 # GitHub Actions CI/CD workflows
 ├── sample_logs/             # Directory for EVTX / test files
 └── output/                  # Generated reports (alerts.json, incident_report.txt)
 ```
@@ -52,9 +62,19 @@ pip install -r requirements.txt
 python detection_engine.py --file security_logs.evtx
 ```
 
-**Scan with custom output directory:**
+**Launch the Interactive Web Dashboard:**
 ```bash
-python detection_engine.py --file security_logs.evtx --output ./results
+streamlit run dashboard.py
+```
+
+**Send alerts to Slack (Critical/High severity):**
+```bash
+python detection_engine.py --file security_logs.evtx --slack-webhook https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+```
+
+**Run Automated Tests:**
+```bash
+make test
 ```
 
 **Verbose mode (debug logging):**

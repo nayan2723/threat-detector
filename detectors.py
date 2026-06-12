@@ -93,6 +93,7 @@ def _ts(event: dict) -> datetime:
 # 1. Brute-Force Detection
 # ===========================
 
+
 def detect_brute_force(events: list[dict]) -> list[dict]:
     """
     Correlate repeated failed logins (4625) for the same target account
@@ -136,22 +137,24 @@ def detect_brute_force(events: list[dict]) -> list[dict]:
                     e["event_data"].get("IpAddress", "N/A") for e in window_events
                 }
 
-                alerts.append({
-                    "detection": "Brute-Force Login Attempt",
-                    "mitre_key": "brute_force",
-                    "severity": "HIGH",
-                    "target_user": username,
-                    "failed_count": window_count,
-                    "time_window_start": attempts[start]["timestamp"],
-                    "time_window_end": attempts[end]["timestamp"],
-                    "source_ips": list(source_ips),
-                    "computer": attempts[start].get("computer", "UNKNOWN"),
-                    "description": (
-                        f"{window_count} failed logins for '{username}' within "
-                        f"{BRUTE_FORCE_WINDOW_MINUTES} minutes from IPs: "
-                        f"{', '.join(source_ips)}"
-                    ),
-                })
+                alerts.append(
+                    {
+                        "detection": "Brute-Force Login Attempt",
+                        "mitre_key": "brute_force",
+                        "severity": "HIGH",
+                        "target_user": username,
+                        "failed_count": window_count,
+                        "time_window_start": attempts[start]["timestamp"],
+                        "time_window_end": attempts[end]["timestamp"],
+                        "source_ips": list(source_ips),
+                        "computer": attempts[start].get("computer", "UNKNOWN"),
+                        "description": (
+                            f"{window_count} failed logins for '{username}' within "
+                            f"{BRUTE_FORCE_WINDOW_MINUTES} minutes from IPs: "
+                            f"{', '.join(source_ips)}"
+                        ),
+                    }
+                )
                 # Only report once per user per window cluster — advance past it
                 break
 
@@ -162,6 +165,7 @@ def detect_brute_force(events: list[dict]) -> list[dict]:
 # ===========================
 # 2. Account Creation
 # ===========================
+
 
 def detect_account_creation(events: list[dict]) -> list[dict]:
     """
@@ -186,19 +190,21 @@ def detect_account_creation(events: list[dict]) -> list[dict]:
             if created_by.upper() not in ("SYSTEM", "LOCALSERVICE", "NETWORKSERVICE"):
                 severity = "HIGH"
 
-            alerts.append({
-                "detection": "New User Account Created",
-                "mitre_key": "account_creation",
-                "severity": severity,
-                "new_user": new_user,
-                "created_by": created_by,
-                "timestamp": event["timestamp"],
-                "computer": event.get("computer", "UNKNOWN"),
-                "description": (
-                    f"Account '{new_user}' created by '{created_by}' "
-                    f"on {event.get('computer', 'UNKNOWN')} at {event['timestamp']}"
-                ),
-            })
+            alerts.append(
+                {
+                    "detection": "New User Account Created",
+                    "mitre_key": "account_creation",
+                    "severity": severity,
+                    "new_user": new_user,
+                    "created_by": created_by,
+                    "timestamp": event["timestamp"],
+                    "computer": event.get("computer", "UNKNOWN"),
+                    "description": (
+                        f"Account '{new_user}' created by '{created_by}' "
+                        f"on {event.get('computer', 'UNKNOWN')} at {event['timestamp']}"
+                    ),
+                }
+            )
 
     logger.info("Account creation detector: %d alerts", len(alerts))
     return alerts
@@ -207,6 +213,7 @@ def detect_account_creation(events: list[dict]) -> list[dict]:
 # ===========================
 # 3. Privilege Escalation
 # ===========================
+
 
 def detect_privilege_escalation(events: list[dict]) -> list[dict]:
     """
@@ -231,21 +238,23 @@ def detect_privilege_escalation(events: list[dict]) -> list[dict]:
             if group_name.lower() not in SENSITIVE_GROUPS:
                 continue
 
-            alerts.append({
-                "detection": "Privilege Escalation - Group Modification",
-                "mitre_key": "privilege_escalation_group",
-                "severity": "CRITICAL",
-                "group_name": group_name,
-                "group_type": group_type,
-                "member_added": member,
-                "changed_by": changed_by,
-                "timestamp": event["timestamp"],
-                "computer": event.get("computer", "UNKNOWN"),
-                "description": (
-                    f"'{member}' added to sensitive {group_type} group "
-                    f"'{group_name}' by '{changed_by}' at {event['timestamp']}"
-                ),
-            })
+            alerts.append(
+                {
+                    "detection": "Privilege Escalation - Group Modification",
+                    "mitre_key": "privilege_escalation_group",
+                    "severity": "CRITICAL",
+                    "group_name": group_name,
+                    "group_type": group_type,
+                    "member_added": member,
+                    "changed_by": changed_by,
+                    "timestamp": event["timestamp"],
+                    "computer": event.get("computer", "UNKNOWN"),
+                    "description": (
+                        f"'{member}' added to sensitive {group_type} group "
+                        f"'{group_name}' by '{changed_by}' at {event['timestamp']}"
+                    ),
+                }
+            )
 
     logger.info("Privilege escalation detector: %d alerts", len(alerts))
     return alerts
@@ -286,21 +295,23 @@ def detect_encoded_powershell(events: list[dict]) -> list[dict]:
             continue
 
         if _ENCODED_CMD_RE.search(cmdline):
-            alerts.append({
-                "detection": "Encoded PowerShell Execution",
-                "mitre_key": "encoded_powershell",
-                "severity": "CRITICAL",
-                "username": ed.get("SubjectUserName", "UNKNOWN"),
-                "process": ed.get("NewProcessName", "UNKNOWN"),
-                "command_line": cmdline,
-                "parent_process": ed.get("ParentProcessName", "UNKNOWN"),
-                "timestamp": event["timestamp"],
-                "computer": event.get("computer", "UNKNOWN"),
-                "description": (
-                    f"Encoded PowerShell detected on {event.get('computer', 'UNKNOWN')} "
-                    f"by user '{ed.get('SubjectUserName', 'UNKNOWN')}' at {event['timestamp']}"
-                ),
-            })
+            alerts.append(
+                {
+                    "detection": "Encoded PowerShell Execution",
+                    "mitre_key": "encoded_powershell",
+                    "severity": "CRITICAL",
+                    "username": ed.get("SubjectUserName", "UNKNOWN"),
+                    "process": ed.get("NewProcessName", "UNKNOWN"),
+                    "command_line": cmdline,
+                    "parent_process": ed.get("ParentProcessName", "UNKNOWN"),
+                    "timestamp": event["timestamp"],
+                    "computer": event.get("computer", "UNKNOWN"),
+                    "description": (
+                        f"Encoded PowerShell detected on {event.get('computer', 'UNKNOWN')} "
+                        f"by user '{ed.get('SubjectUserName', 'UNKNOWN')}' at {event['timestamp']}"
+                    ),
+                }
+            )
 
     logger.info("Encoded PowerShell detector: %d alerts", len(alerts))
     return alerts
@@ -309,6 +320,7 @@ def detect_encoded_powershell(events: list[dict]) -> list[dict]:
 # ===========================
 # 5. Process Anomalies
 # ===========================
+
 
 def detect_process_anomalies(events: list[dict]) -> list[dict]:
     """
@@ -336,42 +348,49 @@ def detect_process_anomalies(events: list[dict]) -> list[dict]:
         cmdline = ed.get("CommandLine", "")
 
         # (a) LOLBin spawned from anomalous parent
-        if proc_basename in SUSPICIOUS_PROCESSES and parent_basename in ANOMALOUS_PARENTS:
-            alerts.append({
-                "detection": "Suspicious Process Lineage",
-                "mitre_key": "process_anomaly",
-                "severity": "HIGH",
-                "username": ed.get("SubjectUserName", "UNKNOWN"),
-                "process": new_proc,
-                "parent_process": parent_proc,
-                "command_line": cmdline,
-                "timestamp": event["timestamp"],
-                "computer": event.get("computer", "UNKNOWN"),
-                "description": (
-                    f"Suspicious child process '{proc_basename}' spawned by "
-                    f"'{parent_basename}' on {event.get('computer', 'UNKNOWN')} "
-                    f"at {event['timestamp']}"
-                ),
-            })
+        if (
+            proc_basename in SUSPICIOUS_PROCESSES
+            and parent_basename in ANOMALOUS_PARENTS
+        ):
+            alerts.append(
+                {
+                    "detection": "Suspicious Process Lineage",
+                    "mitre_key": "process_anomaly",
+                    "severity": "HIGH",
+                    "username": ed.get("SubjectUserName", "UNKNOWN"),
+                    "process": new_proc,
+                    "parent_process": parent_proc,
+                    "command_line": cmdline,
+                    "timestamp": event["timestamp"],
+                    "computer": event.get("computer", "UNKNOWN"),
+                    "description": (
+                        f"Suspicious child process '{proc_basename}' spawned by "
+                        f"'{parent_basename}' on {event.get('computer', 'UNKNOWN')} "
+                        f"at {event['timestamp']}"
+                    ),
+                }
+            )
 
         # (b) Execution from temp / user-writable directories
         temp_indicators = ("\\temp\\", "\\tmp\\", "\\appdata\\local\\temp\\")
         if any(indicator in new_proc for indicator in temp_indicators):
-            alerts.append({
-                "detection": "Process Execution from Temp Directory",
-                "mitre_key": "suspicious_process",
-                "severity": "MEDIUM",
-                "username": ed.get("SubjectUserName", "UNKNOWN"),
-                "process": new_proc,
-                "parent_process": parent_proc,
-                "command_line": cmdline,
-                "timestamp": event["timestamp"],
-                "computer": event.get("computer", "UNKNOWN"),
-                "description": (
-                    f"Process '{new_proc}' executed from temp directory "
-                    f"on {event.get('computer', 'UNKNOWN')} at {event['timestamp']}"
-                ),
-            })
+            alerts.append(
+                {
+                    "detection": "Process Execution from Temp Directory",
+                    "mitre_key": "suspicious_process",
+                    "severity": "MEDIUM",
+                    "username": ed.get("SubjectUserName", "UNKNOWN"),
+                    "process": new_proc,
+                    "parent_process": parent_proc,
+                    "command_line": cmdline,
+                    "timestamp": event["timestamp"],
+                    "computer": event.get("computer", "UNKNOWN"),
+                    "description": (
+                        f"Process '{new_proc}' executed from temp directory "
+                        f"on {event.get('computer', 'UNKNOWN')} at {event['timestamp']}"
+                    ),
+                }
+            )
 
     logger.info("Process anomaly detector: %d alerts", len(alerts))
     return alerts
@@ -380,6 +399,7 @@ def detect_process_anomalies(events: list[dict]) -> list[dict]:
 # ===========================
 # Aggregator
 # ===========================
+
 
 def run_all_detectors(events: list[dict]) -> list[dict]:
     """

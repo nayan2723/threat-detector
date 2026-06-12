@@ -20,6 +20,10 @@ import logging
 import sys
 from pathlib import Path
 
+from rich.logging import RichHandler
+from rich.console import Console
+from rich.table import Table
+
 from parser import parse_evtx
 from detectors import run_all_detectors
 from utils import (
@@ -29,7 +33,10 @@ from utils import (
     severity_stats,
     write_alerts_json,
     write_incident_report,
+    send_slack_alert,
 )
+
+console = Console()
 
 
 def setup_logging(verbose: bool = False) -> None:
@@ -37,8 +44,9 @@ def setup_logging(verbose: bool = False) -> None:
     level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(
         level=level,
-        format="%(asctime)s [%(levelname)-8s] %(name)s: %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
+        format="%(message)s",
+        datefmt="[%X]",
+        handlers=[RichHandler(rich_tracebacks=True, show_path=False)],
     )
 
 
@@ -55,22 +63,26 @@ def build_cli() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
-        "--file", "-f",
+        "--file",
+        "-f",
         required=True,
         help="Path to the Windows Security EVTX log file.",
     )
     parser.add_argument(
-        "--output", "-o",
+        "--output",
+        "-o",
         default="output",
         help="Directory for output files (default: ./output).",
     )
     parser.add_argument(
-        "--mitre-map", "-m",
+        "--mitre-map",
+        "-m",
         default=None,
         help="Path to custom mitre_mapping.json (default: bundled file).",
     )
     parser.add_argument(
-        "--verbose", "-v",
+        "--verbose",
+        "-v",
         action="store_true",
         help="Enable verbose/debug logging.",
     )
@@ -78,6 +90,11 @@ def build_cli() -> argparse.ArgumentParser:
         "--json-input",
         action="store_true",
         help="Treat --file as a JSON array of pre-parsed events (for testing).",
+    )
+    parser.add_argument(
+        "--slack-webhook",
+        default=None,
+        help="Slack Webhook URL to send CRITICAL and HIGH alerts.",
     )
 
     return parser
@@ -150,16 +167,30 @@ def main() -> int:
 
     # --- Console summary ---
     stats = severity_stats(alerts)
-    logger.info("=" * 60)
-    logger.info("SCAN COMPLETE — %d alert(s) generated", len(alerts))
+
+    table = Table(title="Detection Summary")
+    table.add_column("Severity", justify="right")
+    table.add_column("Count", justify="right")
+
     for sev in ("CRITICAL", "HIGH", "MEDIUM", "LOW"):
         count = stats.get(sev, 0)
-        if count:
-            logger.info("  %s: %d", sev, count)
+        color = (
+            "red"
+            if sev == "CRITICAL"
+            else "yellow" if sev == "HIGH" else "cyan" if sev == "MEDIUM" else "green"
+        )
+        table.add_row(f"[{color}]{sev}[/{color}]", str(count))
+
+    console.print(table)
+
+    logger.info("SCAN COMPLETE — %d alert(s) generated", len(alerts))
     logger.info("Output:")
     logger.info("  Alerts JSON    : %s", alerts_path.resolve())
     logger.info("  Incident Report: %s", report_path.resolve())
-    logger.info("=" * 60)
+
+    if args.slack_webhook:
+        logger.info("Sending alerts to Slack...")
+        send_slack_alert(alerts, args.slack_webhook)
 
     return 0
 

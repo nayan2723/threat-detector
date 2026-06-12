@@ -1,1 +1,9 @@
 python-evtx>=0.7.4
+rich>=13.7.0
+pytest>=8.0.0
+flake8>=7.0.0
+black>=24.0.0
+requests>=2.30.0
+streamlit>=1.30.0
+pandas>=2.0.0
+plotly>=5.18.0

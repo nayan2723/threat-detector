@@ -10,6 +10,7 @@ Handles:
 
 import json
 import logging
+import requests
 from pathlib import Path
 from datetime import datetime
 
@@ -88,6 +89,7 @@ def severity_stats(alerts: list[dict]) -> dict[str, int]:
 # Output writers
 # ---------------------------------------------------------------------------
 
+
 def write_alerts_json(alerts: list[dict], output_path: Path) -> None:
     """
     Write the full alert list to a JSON file.
@@ -155,9 +157,13 @@ def write_incident_report(
         lines.append("")
         lines.append(f"  [{i}] {alert.get('detection', 'Unknown Detection')}")
         lines.append(f"      Severity  : {alert.get('severity', 'N/A')}")
-        lines.append(f"      Timestamp : {alert.get('timestamp', alert.get('time_window_start', 'N/A'))}")
+        lines.append(
+            f"      Timestamp : {alert.get('timestamp', alert.get('time_window_start', 'N/A'))}"
+        )
         lines.append(f"      Computer  : {alert.get('computer', 'N/A')}")
-        lines.append(f"      MITRE     : {mitre.get('technique_id', 'N/A')} - {mitre.get('technique_name', 'N/A')}")
+        lines.append(
+            f"      MITRE     : {mitre.get('technique_id', 'N/A')} - {mitre.get('technique_name', 'N/A')}"
+        )
         lines.append(f"      Tactic    : {mitre.get('tactic', 'N/A')}")
         lines.append(f"      Detail    : {alert.get('description', 'N/A')}")
 
@@ -169,7 +175,9 @@ def write_incident_report(
 
     if stats.get("CRITICAL", 0) > 0:
         lines.append("  [!] CRITICAL findings require IMMEDIATE investigation.")
-        lines.append("      - Isolate affected hosts if active compromise is suspected.")
+        lines.append(
+            "      - Isolate affected hosts if active compromise is suspected."
+        )
         lines.append("      - Preserve forensic evidence before remediation.")
         lines.append("")
 
@@ -196,3 +204,46 @@ def write_incident_report(
         f.write(report_text)
 
     logger.info("Wrote incident report to %s", output_path)
+
+
+def send_slack_alert(alerts: list[dict], webhook_url: str) -> None:
+    """Send CRITICAL and HIGH severity alerts to a Slack webhook."""
+    if not webhook_url:
+        return
+
+    high_sev_alerts = [a for a in alerts if a.get("severity") in ("CRITICAL", "HIGH")]
+    if not high_sev_alerts:
+        logger.info("No CRITICAL/HIGH alerts to send to Slack.")
+        return
+
+    for alert in high_sev_alerts:
+        color = "#ff0000" if alert.get("severity") == "CRITICAL" else "#ffa500"
+        payload = {
+            "attachments": [
+                {
+                    "color": color,
+                    "title": f"🚨 {alert.get('severity')} Alert: {alert.get('detection')}",
+                    "text": alert.get("description", ""),
+                    "fields": [
+                        {
+                            "title": "Computer",
+                            "value": alert.get("computer", "UNKNOWN"),
+                            "short": True,
+                        },
+                        {
+                            "title": "MITRE Technique",
+                            "value": alert.get("mitre", {}).get("technique_id", "N/A"),
+                            "short": True,
+                        },
+                    ],
+                    "footer": "Windows Threat Detector",
+                }
+            ]
+        }
+        try:
+            response = requests.post(webhook_url, json=payload, timeout=5)
+            response.raise_for_status()
+        except requests.RequestException as e:
+            logger.error("Failed to send Slack alert: %s", e)
+
+    logger.info("Sent %d alerts to Slack", len(high_sev_alerts))

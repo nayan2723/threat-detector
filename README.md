@@ -40,7 +40,7 @@ win-threat-detector/
 ### Installation
 
 ```bash
-git clone https://github.com/<your-username>/win-threat-detector.git
+git clone https://github.com/nayan2723/win-threat-detector.git
 cd win-threat-detector
 pip install -r requirements.txt
 ```
